@@ -1,0 +1,882 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "4e1215dc-c5f6-4881-8c31-dec5bbe9531d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import tensorflow as tf\n",
+    "from tensorflow.keras import models, layers\n",
+    "import matplotlib.pyplot as plt"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "02a08830-0fb2-400c-ac81-faab162398de",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "IMAGE_SIZE = 256\n",
+    "BATCH_SIZE = 32\n",
+    "CHANNELS = 3\n",
+    "EPOCHS = 50"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "4812e71d-6ca8-4d53-8988-ca262f403194",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Found 2152 files belonging to 3 classes.\n"
+     ]
+    }
+   ],
+   "source": [
+    "dataset=tf.keras.preprocessing.image_dataset_from_directory(\"PlantVillage\",shuffle=True,image_size=(IMAGE_SIZE,IMAGE_SIZE),batch_size=BATCH_SIZE)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "282f1dc8-4b4f-4cd5-a905-f4d5d8bd7dee",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "['Potato___Early_blight', 'Potato___Late_blight', 'Potato___healthy']\n"
+     ]
+    }
+   ],
+   "source": [
+    "class_names = dataset.class_names\n",
+    "print(class_names)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "870817b5-4151-466d-b25d-f8fbae6baada",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "68"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "len(dataset)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "d07c2420-517f-474d-a278-f4b7ab7f9b6a",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "[[[176. 163. 170.]\n",
+      "  [155. 142. 149.]\n",
+      "  [155. 142. 149.]\n",
+      "  ...\n",
+      "  [111. 100. 108.]\n",
+      "  [113. 102. 110.]\n",
+      "  [116. 105. 113.]]\n",
+      "\n",
+      " [[171. 158. 165.]\n",
+      "  [150. 137. 144.]\n",
+      "  [150. 137. 144.]\n",
+      "  ...\n",
+      "  [113. 102. 110.]\n",
+      "  [112. 101. 109.]\n",
+      "  [113. 102. 110.]]\n",
+      "\n",
+      " [[173. 160. 167.]\n",
+      "  [154. 141. 148.]\n",
+      "  [155. 142. 149.]\n",
+      "  ...\n",
+      "  [114. 103. 111.]\n",
+      "  [112. 101. 109.]\n",
+      "  [111. 100. 108.]]\n",
+      "\n",
+      " ...\n",
+      "\n",
+      " [[ 44.  17.  22.]\n",
+      "  [ 41.  16.  20.]\n",
+      "  [ 46.  21.  24.]\n",
+      "  ...\n",
+      "  [156. 131. 135.]\n",
+      "  [136. 111. 115.]\n",
+      "  [147. 122. 126.]]\n",
+      "\n",
+      " [[ 42.  17.  21.]\n",
+      "  [ 45.  20.  24.]\n",
+      "  [ 57.  32.  35.]\n",
+      "  ...\n",
+      "  [148. 123. 127.]\n",
+      "  [129. 104. 108.]\n",
+      "  [143. 118. 122.]]\n",
+      "\n",
+      " [[ 44.  19.  23.]\n",
+      "  [ 30.   5.   9.]\n",
+      "  [ 35.  13.  15.]\n",
+      "  ...\n",
+      "  [130. 105. 109.]\n",
+      "  [131. 106. 110.]\n",
+      "  [140. 115. 119.]]]\n"
+     ]
+    }
+   ],
+   "source": [
+    "for image_batch, label_batch in dataset.take(1):\n",
+    "    print(image_batch[0].numpy())"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "394ce9eb-bac8-4362-a95c-97bf8021a78a",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(256, 256, 3)\n"
+     ]
+    }
+   ],
+   "source": [
+    "for image_batch, label_batch in dataset.take(1):\n",
+    "    print(image_batch[0].shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "8f08d595-fcc8-4f32-ae02-66d4446d81f3",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "54.400000000000006"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "train_size = 0.8\n",
+    "len(dataset)*train_size"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "67e99a49-4d92-4b8a-aabc-c957659e84f1",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "54"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "train_ds = dataset.take(54)\n",
+    "len(train_ds)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "f8893ddb-b331-4075-84cc-e910bb3e4528",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "14"
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "test_ds = dataset.skip(54)\n",
+    "len(test_ds)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "a5b7c467-cc1e-4fd9-ad45-4f4ef9e099bc",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "6"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "val_ds = test_ds.take(6)\n",
+    "len(val_ds)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "cbfe043f-0daa-4edf-b081-2b06af9bb166",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "8"
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "test_ds = test_ds.skip(6)\n",
+    "len(test_ds)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "728a3c21-9b0a-4e99-891e-0be3869fc2b0",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def get_dataset_partitions_tf(ds, train_split = 0.8, val_split = 0.1, test_split = 0.1,shuffle = True,shuffle_size=10000):\n",
+    "    ds_size = len(ds)\n",
+    "    if shuffle:\n",
+    "        ds = ds.shuffle(shuffle_size,seed = 12)\n",
+    "    train_size = int(train_split*ds_size)\n",
+    "    val_size = int(val_split*ds_size)\n",
+    "    train_ds = ds.take(train_size)\n",
+    "    val_ds = ds.skip(train_size).take(val_size)\n",
+    "    test_ds = ds.skip(train_size).skip(val_size)\n",
+    "    return train_ds, val_ds, test_ds"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "3d0620c1-436f-4458-ae4e-a084b7ca3a24",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "train_ds, val_ds, test_ds = get_dataset_partitions_tf(dataset)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "234f2683-ffbe-43d0-88dd-4143860b40f4",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "train_ds=train_ds.cache().shuffle(1000).prefetch(buffer_size = tf.data.AUTOTUNE)\n",
+    "val_ds = val_ds.cache().shuffle(1000).prefetch(buffer_size=tf.data.AUTOTUNE)\n",
+    "test_ds = test_ds.cache().shuffle(1000).prefetch(buffer_size=tf.data.AUTOTUNE)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "6c97b044-c789-4100-8f59-93054f47bf8a",
+   "metadata": {},
+   "outputs": [
+    {
+     "ename": "AttributeError",
+     "evalue": "module 'keras._tf_keras.keras.layers' has no attribute 'experimental'",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[31m---------------------------------------------------------------------------\u001b[39m",
+      "\u001b[31mAttributeError\u001b[39m                            Traceback (most recent call last)",
+      "\u001b[36mCell\u001b[39m\u001b[36m \u001b[39m\u001b[32mIn[17]\u001b[39m\u001b[32m, line 2\u001b[39m\n\u001b[32m      1\u001b[39m resize_and_rescale=tf.keras.Sequential([\n\u001b[32m----> \u001b[39m\u001b[32m2\u001b[39m     \u001b[43mlayers\u001b[49m\u001b[43m.\u001b[49m\u001b[43mexperimental\u001b[49m.preprocessing.Resizing(IMAGE_SIZE,IMAGE_SIZE),\n\u001b[32m      3\u001b[39m     layers.experimental.preprocessing.Rescaling(\u001b[32m1.0\u001b[39m/\u001b[32m255\u001b[39m)\n\u001b[32m      4\u001b[39m ])\n",
+      "\u001b[31mAttributeError\u001b[39m: module 'keras._tf_keras.keras.layers' has no attribute 'experimental'"
+     ]
+    }
+   ],
+   "source": [
+    "resize_and_rescale=tf.keras.Sequential([\n",
+    "    layers.experimental.preprocessing.Resizing(IMAGE_SIZE,IMAGE_SIZE),\n",
+    "    layers.experimental.preprocessing.Rescaling(1.0/255)\n",
+    "])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "ffb7d531-2921-494c-ba2f-d8eca0f07ab7",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import tensorflow as tf\n",
+    "print(tf.__version__)     # e.g. 2.16.1\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "23926103-8dc2-4cd7-b30e-471bbe0d7e9b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import tensorflow as tf\n",
+    "from tensorflow.keras import layers   # or: from keras import layers  (Keras 3)\n",
+    "\n",
+    "\n",
+    "\n",
+    "resize_and_rescale = tf.keras.Sequential([\n",
+    "    layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),\n",
+    "    layers.Rescaling(1.0 / 255)\n",
+    "])\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "61e1562f-2c2d-45bf-94a7-3c94718017c6",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "print(IMAGE_SIZE)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "2a4d449a-ca44-4ee2-a343-fe6dcbc05e83",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "data_augmentation = tf.keras.Sequential([\n",
+    "    layers.experimental.preprocessing.RandomFlip(\"horizontal_and_vertical\"),\n",
+    "    layers.experimental.preprocessing.RandomRotation(0.2),\n",
+    "])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "19180cbc-7c5f-4043-9dc0-41c745492458",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import tensorflow as tf\n",
+    "from tensorflow.keras import layers          # or: from keras import layers  (Keras 3)\n",
+    "\n",
+    "data_augmentation = tf.keras.Sequential([\n",
+    "    layers.RandomFlip(\"horizontal_and_vertical\"),\n",
+    "    layers.RandomRotation(0.2),\n",
+    "])\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "41108860-30e6-4c47-a78e-f94af8e88fc4",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "995a2292-cdf3-4496-9f84-a582963ab80e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "input_shape = (BATCH_SIZE,IMAGE_SIZE,IMAGE_SIZE,CHANNELS)\n",
+    "n_classes = 3\n",
+    "model = models.Sequencial([\n",
+    "    resize_and_reshape,\n",
+    "    data_augmentation,\n",
+    "    layers.Conv2D(32,(3,3),activation = \"relu\",input_shape = input_shape),\n",
+    "    layers.MaxPooling2D((2,2)),\n",
+    "    layers.Conv2D(64,kernel_size=(3,3),activation=\"relu\"),\n",
+    "    layers.MaxPooling2D((2,2)),\n",
+    "    layers.Conv2D(64,kernel_size=(3,3),activation=\"relu\"),\n",
+    "    layers.MaxPooling2D((2,2)),\n",
+    "    layers.Conv2D(64,(3,3),activation=\"relu\"),\n",
+    "    layers.MaxPooling2D((2,2)),\n",
+    "    layers.Conv2D(64,(3,3),activation=\"relu\"),\n",
+    "    layers.MaxPooling2D((2,2)),\n",
+    "    layers.Conv2D(64,(3,3),activation=\"relu\"),\n",
+    "    layers.MaxPooling2D((2,2)),\n",
+    "    layers.Flatten(),\n",
+    "    layers.Dense(64,activation=\"relu\"),\n",
+    "    layers.Dense(n_classes,activation=\"softmax\"),\n",
+    "])\n",
+    "model.buil(input_shape=input_shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "6a9079d9-fef6-42c6-bc4a-0c008ef17a0e",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import tensorflow as tf\n",
+    "from tensorflow.keras import layers, models   # or: from keras import layers, models\n",
+    "\n",
+    "# Updated image size\n",
+    "IMAGE_SIZE   = 256\n",
+    "CHANNELS     = 3\n",
+    "BATCH_SIZE   = 32\n",
+    "N_CLASSES    = 3\n",
+    "\n",
+    "# 1. Resize & Rescale\n",
+    "resize_and_rescale = tf.keras.Sequential([\n",
+    "    layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),\n",
+    "    layers.Rescaling(1./255)\n",
+    "])\n",
+    "\n",
+    "# 2. Data Augmentation\n",
+    "data_augmentation = tf.keras.Sequential([\n",
+    "    layers.RandomFlip(\"horizontal_and_vertical\"),\n",
+    "    layers.RandomRotation(0.2),\n",
+    "])\n",
+    "\n",
+    "# 3. Model Architecture\n",
+    "model = models.Sequential([\n",
+    "    resize_and_rescale,\n",
+    "    data_augmentation,\n",
+    "\n",
+    "    layers.Conv2D(32, (3, 3), activation=\"relu\", input_shape=(IMAGE_SIZE, IMAGE_SIZE, CHANNELS)),\n",
+    "    layers.MaxPooling2D(2, 2),\n",
+    "\n",
+    "    layers.Conv2D(64, (3, 3), activation=\"relu\"),\n",
+    "    layers.MaxPooling2D(2, 2),\n",
+    "\n",
+    "    layers.Conv2D(64, (3, 3), activation=\"relu\"),\n",
+    "    layers.MaxPooling2D(2, 2),\n",
+    "\n",
+    "    layers.Conv2D(64, (3, 3), activation=\"relu\"),\n",
+    "    layers.MaxPooling2D(2, 2),\n",
+    "\n",
+    "    layers.Flatten(),\n",
+    "    layers.Dense(64, activation=\"relu\"),\n",
+    "    layers.Dense(N_CLASSES, activation=\"softmax\"),\n",
+    "])\n",
+    "\n",
+    "# 4. Build the model (optional — compile or fit would do this too)\n",
+    "model.build(input_shape=(None, IMAGE_SIZE, IMAGE_SIZE, CHANNELS))\n",
+    "\n",
+    "# 5. Summary\n",
+    "model.summary()\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "bc65c90a-e27f-4006-8ff6-75d4dc9d8859",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model.compile(\n",
+    "    optimizer = \"adam\",\n",
+    "    loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),\n",
+    "    metrics=[\"accuracy\"],\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "3defccca-7897-477e-99f1-d637431b8c58",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "history=model.fit(\n",
+    "    train_ds,\n",
+    "    epochs = EPOCHS,\n",
+    "    \n",
+    "    verbose=1,\n",
+    "    validation_data=val_ds\n",
+    ")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "027ab3d3-54cf-42cc-9936-5dfcdb915e18",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "scores = model.evaluate(test_ds)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "c0cdbab5-bdfb-49e8-8f24-ea59f60835ef",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "scores"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "a56d648c-232b-4518-befe-c36f3cd9e550",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "history"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "33000946-5a66-4c73-a2c6-79112b2f73e8",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "for image_batch, label_batch in test_ds.take(1):\n",
+    "    first_image = image_batch[0].numpy().astype('uint8')\n",
+    "    first_image = label_batch[0].numpy()\n",
+    "    print(\"first image to predict\")\n",
+    "    plt.imshow(first_image)\n",
+    "    print(\"actual label:\",class_names[first_label])\n",
+    "\n",
+    "    batch_prediction = model.predict(images_batch)\n",
+    "    print(\"Predicted label:\",class_names[np.argmax(batch_prediction[0])])"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "aff15e71-de79-49d9-9ef0-b1befeb14060",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "import tensorflow as tf\n",
+    "\n",
+    "for images, labels in test_ds.take(1):\n",
+    "    # --------  pick the first sample in this batch  --------\n",
+    "    img  = images[0].numpy().astype('uint8')   # (256, 256, 3)\n",
+    "    true_label = labels[0].numpy()             # scalar integer\n",
+    "\n",
+    "    # --------  show the image  --------\n",
+    "    plt.imshow(img)\n",
+    "    plt.title(f\"Actual label: {class_names[true_label]}\")\n",
+    "    plt.axis(\"off\")\n",
+    "    plt.show()\n",
+    "\n",
+    "    # --------  make a prediction  --------\n",
+    "    preds = model.predict(tf.expand_dims(images[0], axis=0))   # add batch dim\n",
+    "    pred_label = np.argmax(preds[0])\n",
+    "\n",
+    "    print(\"Predicted label:\", class_names[pred_label])\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "aac2d384-17b8-4dec-8d2e-5f4404a174ce",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def predict(model, img):\n",
+    "    img_array = tf.keras.preprocessing.image.img_to_array(images[i].numpy())\n",
+    "    img_array = tf.expand_dims(img_array,0)\n",
+    "    predictions = model.predict(img_array)\n",
+    "    predicted_class = class_names[np.argmax(predictions[0])]\n",
+    "    confidence = round(100*(np.max(predictions[0])),2)\n",
+    "    return predicted_class, confidence"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "37c7e3d5-7636-4128-a2d3-4eb4725e45e9",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "plt.figure(figsize=(15, 15))\n",
+    "for images, labels in test_ds.take(1):\n",
+    "    for i in range(9):\n",
+    "        ax = plt.subplot(3,3,i+1)\n",
+    "        plt.imshow(images[i].numpy().astype(\"uint8\"))\n",
+    "        predicted_class, confidence = predict(model, images[i].numpy())\n",
+    "        actual_class = class_names[labels[i]]\n",
+    "        plt.title(f\"Actual: {actual_class},\\n Predicted: {predicted_class}.\\n Confidence: {confidence}%\")\n",
+    "        plt.axis(\"off\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "2a2bc8f9-1b65-414b-8c43-d9396b8495d1",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "model_version = 1\n",
+    "model.save(fr\"E:\\Potato_disease_detection-2\\model\\potato_v{model_version}.keras\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "546cdc6d-ecd8-4068-a9a5-35ac199a020e",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
+
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "546cdc6d-ecd8-4068-a9a5-35ac199a020e",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Found 2152 files belonging to 3 classes.\n",
+      "Epoch 1/50\n",
+      "\u001b[1m54/54\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m\u001b[0m \u001b[1m66s\u001b[0m 1s/step - accuracy: 0.5194 - loss: 0.9052 - val_accuracy: 0.7292 - val_loss: 0.6866\n",
+      "Epoch 2/50\n",
+      "\u001b[1m45/54\u001b[0m \u001b[32m━━━━━━━━━━━━━━━━\u001b[0m\u001b[37m━━━━\u001b[0m \u001b[1m8s\u001b[0m 984ms/step - accuracy: 0.8389 - loss: 0.4574"
+     ]
+    }
+   ],
+   "source": [
+    "import tensorflow as tf\n",
+    "from tensorflow.keras import layers, models\n",
+    "import matplotlib.pyplot as plt\n",
+    "import numpy as np\n",
+    "\n",
+    "# Constants\n",
+    "IMAGE_SIZE = 256\n",
+    "BATCH_SIZE = 32\n",
+    "CHANNELS = 3\n",
+    "EPOCHS = 50\n",
+    "DATA_DIR = \"PlantVillage\"  # Make sure this folder contains class subfolders\n",
+    "\n",
+    "# Load dataset\n",
+    "dataset = tf.keras.preprocessing.image_dataset_from_directory(\n",
+    "    DATA_DIR,\n",
+    "    shuffle=True,\n",
+    "    image_size=(IMAGE_SIZE, IMAGE_SIZE),\n",
+    "    batch_size=BATCH_SIZE\n",
+    ")\n",
+    "\n",
+    "class_names = dataset.class_names\n",
+    "N_CLASSES = len(class_names)\n",
+    "\n",
+    "# Split the dataset\n",
+    "def get_dataset_partitions_tf(ds, train_split=0.8, val_split=0.1, test_split=0.1, shuffle=True, shuffle_size=10000):\n",
+    "    ds_size = len(ds)\n",
+    "    if shuffle:\n",
+    "        ds = ds.shuffle(shuffle_size, seed=12)\n",
+    "    train_size = int(train_split * ds_size)\n",
+    "    val_size = int(val_split * ds_size)\n",
+    "\n",
+    "    train_ds = ds.take(train_size)\n",
+    "    val_ds = ds.skip(train_size).take(val_size)\n",
+    "    test_ds = ds.skip(train_size + val_size)\n",
+    "    return train_ds, val_ds, test_ds\n",
+    "\n",
+    "train_ds, val_ds, test_ds = get_dataset_partitions_tf(dataset)\n",
+    "\n",
+    "# Prefetch for performance\n",
+    "AUTOTUNE = tf.data.AUTOTUNE\n",
+    "train_ds = train_ds.cache().shuffle(1000).prefetch(buffer_size=AUTOTUNE)\n",
+    "val_ds = val_ds.cache().prefetch(buffer_size=AUTOTUNE)\n",
+    "test_ds = test_ds.cache().prefetch(buffer_size=AUTOTUNE)\n",
+    "\n",
+    "# Data preprocessing & augmentation\n",
+    "resize_and_rescale = tf.keras.Sequential([\n",
+    "    layers.Resizing(IMAGE_SIZE, IMAGE_SIZE),\n",
+    "    layers.Rescaling(1./255)\n",
+    "])\n",
+    "\n",
+    "data_augmentation = tf.keras.Sequential([\n",
+    "    layers.RandomFlip(\"horizontal_and_vertical\"),\n",
+    "    layers.RandomRotation(0.2),\n",
+    "])\n",
+    "\n",
+    "# Model architecture\n",
+    "model = models.Sequential([\n",
+    "    resize_and_rescale,\n",
+    "    data_augmentation,\n",
+    "\n",
+    "    layers.Conv2D(32, (3, 3), activation=\"relu\"),\n",
+    "    layers.MaxPooling2D(2, 2),\n",
+    "\n",
+    "    layers.Conv2D(64, (3, 3), activation=\"relu\"),\n",
+    "    layers.MaxPooling2D(2, 2),\n",
+    "\n",
+    "    layers.Conv2D(64, (3, 3), activation=\"relu\"),\n",
+    "    layers.MaxPooling2D(2, 2),\n",
+    "\n",
+    "    layers.Conv2D(64, (3, 3), activation=\"relu\"),\n",
+    "    layers.MaxPooling2D(2, 2),\n",
+    "\n",
+    "    layers.Flatten(),\n",
+    "    layers.Dense(64, activation=\"relu\"),\n",
+    "    layers.Dense(N_CLASSES, activation=\"softmax\")\n",
+    "])\n",
+    "\n",
+    "# Compile model\n",
+    "model.compile(\n",
+    "    optimizer=\"adam\",\n",
+    "    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),\n",
+    "    metrics=[\"accuracy\"]\n",
+    ")\n",
+    "\n",
+    "# Train model\n",
+    "history = model.fit(\n",
+    "    train_ds,\n",
+    "    epochs=EPOCHS,\n",
+    "    validation_data=val_ds,\n",
+    "    verbose=1\n",
+    ")\n",
+    "\n",
+    "# Evaluate model\n",
+    "test_loss, test_accuracy = model.evaluate(test_ds)\n",
+    "print(f\"Test accuracy: {test_accuracy * 100:.2f}%\")\n",
+    "\n",
+    "# Visualize prediction on one image\n",
+    "for images, labels in test_ds.take(1):\n",
+    "    img = images[0].numpy().astype('uint8')\n",
+    "    true_label = labels[0].numpy()\n",
+    "    plt.imshow(img)\n",
+    "    plt.title(f\"Actual: {class_names[true_label]}\")\n",
+    "    plt.axis(\"off\")\n",
+    "    plt.show()\n",
+    "\n",
+    "    preds = model.predict(tf.expand_dims(images[0], axis=0))\n",
+    "    pred_label = np.argmax(preds[0])\n",
+    "    print(\"Predicted:\", class_names[pred_label])\n",
+    "\n",
+    "# Prediction helper function\n",
+    "def predict(model, img_tensor):\n",
+    "    img_array = tf.keras.preprocessing.image.img_to_array(img_tensor)\n",
+    "    img_array = tf.expand_dims(img_array, 0)  # Create batch\n",
+    "    predictions = model.predict(img_array)\n",
+    "    predicted_class = class_names[np.argmax(predictions[0])]\n",
+    "    confidence = round(100 * np.max(predictions[0]), 2)\n",
+    "    return predicted_class, confidence\n",
+    "\n",
+    "# Predict on 9 test samples\n",
+    "plt.figure(figsize=(15, 15))\n",
+    "for images, labels in test_ds.take(1):\n",
+    "    for i in range(9):\n",
+    "        ax = plt.subplot(3, 3, i + 1)\n",
+    "        plt.imshow(images[i].numpy().astype(\"uint8\"))\n",
+    "        predicted_class, confidence = predict(model, images[i])\n",
+    "        actual_class = class_names[labels[i]]\n",
+    "        plt.title(f\"Actual: {actual_class}\\nPredicted: {predicted_class}\\nConfidence: {confidence}%\")\n",
+    "        plt.axis(\"off\")\n",
+    "\n",
+    "# Save model\n",
+    "model_version = 2\n",
+    "model.save(fr\"E:\\Potato_disease_detection-2\\model\\potato_v{model_version}.keras\")\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "6aa68fb3-9b01-43e5-a68d-af10367a51c6",
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3 (ipykernel)",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
